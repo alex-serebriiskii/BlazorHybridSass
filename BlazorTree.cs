@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
 namespace BlazorHybridSass;
@@ -8,10 +9,12 @@ class BlazorTree
     private BlazorNode? root {get;set;}
     private BlazorNode? currentNode {get;set;}
     private Dictionary<string,string> tags = new Dictionary<string, string>();
-    private void BuildTree(FileInfo file)
+    public void BuildTree(FileInfo file)
     {
         string content = File.ReadAllText(file.FullName);
-        var matches = Regex.Matches(content, tagPattern);
+        var matches = Regex.Matches(content, tagPattern, RegexOptions.Multiline);
+        root = new BlazorNode() { Name = file.Name };
+        currentNode = root;
         foreach (Match match in matches)
         {
             //Check if opening tag
@@ -19,39 +22,22 @@ class BlazorTree
             {
                 var tagname = match.Groups["tagname"].Value;
                 BlazorNode activeNode = new BlazorNode(){Name = tagname};
+                activeNode.Parent = currentNode;
+                currentNode.Children.Add(activeNode);
+                //Record a new tag if it comes up
                 if(!tags.ContainsKey(tagname))
                 {
                     tags.Add(tagname, tagname);
                 }
-                //If there is no root, first tag becomes root
-                if(root == null)
-                {
-                    root = activeNode;
-                    currentNode = root;
-                }
                 //Handle self closing tag
-                if(match.Groups["selfclosingtag"].Success || (match.Groups[""].Success && match.Groups[""].Value.EndsWith("\\")))
+                if((match.Groups["selfclosingtag"].Success && !string.IsNullOrEmpty(match.Groups["selfclosingtag"].Value) )|| (match.Groups[""].Success && match.Groups[""].Value.EndsWith("\\")))
                 //Regex doesn't handle the case of an unquoted attribute right before the end of a self closing tag (ie ...lastattribute=value/>), so we do an explicit check
                 {
-                    currentNode.IsOpen = false;
-                    if (currentNode?.Parent == null)
-                    {
-                        //end evaluation if we hit root
-                        return;
-                    }
-                    else
-                    {
-                        //Move up a level on the tree
-                        currentNode = currentNode.Parent;
-                    }
+                    //mark node closed, stay at current level
+                    activeNode.IsOpen = false;
                     continue;
                 }
                 //Tag isn't self closing, handle moving down tree
-                if(currentNode == root)
-                {
-                    continue;
-                }
-                currentNode.Children.Add(activeNode);
                 currentNode = activeNode;
             }
             else if(match.Groups["closingtagname"].Success)
