@@ -18,6 +18,7 @@ class BlazorTree
             if(match.Groups["tagname"].Success)
             {
                 var tagname = match.Groups["tagname"].Value;
+                BlazorNode activeNode = new BlazorNode(){Name = tagname};
                 if(!tags.ContainsKey(tagname))
                 {
                     tags.Add(tagname, tagname);
@@ -25,10 +26,7 @@ class BlazorTree
                 //If there is no root, first tag becomes root
                 if(root == null)
                 {
-                    root = new BlazorNode()
-                    {
-                        Name = tagname,
-                    };
+                    root = activeNode;
                     currentNode = root;
                 }
                 //Handle self closing tag
@@ -38,17 +36,35 @@ class BlazorTree
                     currentNode.IsOpen = false;
                     if (currentNode?.Parent == null)
                     {
+                        //end evaluation if we hit root
                         return;
+                    }
+                    else
+                    {
+                        //Move up a level on the tree
+                        currentNode = currentNode.Parent;
                     }
                     continue;
                 }
                 //Tag isn't self closing, handle moving down tree
-                BlazorNode child = new BlazorNode() { Name = tagname, Parent = currentNode };
-                currentNode.Children.Add(child);
-                
+                if(currentNode == root)
+                {
+                    continue;
+                }
+                currentNode.Children.Add(activeNode);
+                currentNode = activeNode;
             }
-
+            else if(match.Groups["closingtagname"].Success)
+            {
+                var closingtagname = match.Groups["closingtagname"].Value;
+                if(closingtagname == currentNode.Name)
+                {
+                    currentNode.IsOpen = false;
+                    currentNode = currentNode.Parent;
+                }else{
+                    throw new Exception("Closing tag \"" + closingtagname + "\" doesn't match current open tag \"" + currentNode.Name + "\"");
+                }
+            }
         }
     }
-
 }
