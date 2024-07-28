@@ -6,14 +6,21 @@ namespace BlazorHybridSass;
 class BlazorTree
 {
     private readonly string tagPattern = @"<(?<tagname>[a-zA-Z][\w:\-]*)(?<attributename>\s+[\w:\-]+(?<attributevalue>\s*=\s*(?:"".*?""|'.*?'|[^'""\s>]+))?)*\s*(?<selfclosingtag>\/?)>|<\/(?<closingtagname>[a-zA-Z][\w:\-]*)>";
-    private BlazorNode? root {get;set;}
+    private BlazorNode? root;
+    public BlazorNode Root { get { return root; } }
     private BlazorNode? currentNode {get;set;}
     private Dictionary<string,string> tags = new Dictionary<string, string>();
-    public void BuildTree(FileInfo file)
+    private FileInfo _razorFile;
+    public BlazorTree(FileInfo razorFile)
     {
-        string content = File.ReadAllText(file.FullName);
+        _razorFile = razorFile;
+        BuildTree();
+    }
+    public void BuildTree()
+    {
+        string content = File.ReadAllText(_razorFile.FullName);
         var matches = Regex.Matches(content, tagPattern, RegexOptions.Multiline);
-        root = new BlazorNode() { Name = file.Name };
+        root = new BlazorNode() { Name = _razorFile.Name, IsRoot = true };
         currentNode = root;
         foreach (Match match in matches)
         {
