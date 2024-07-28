@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "nGAYZAtTwk6IAYaQnL5L4kklMT847WXAxjcZS9YdeDUmSKMI3q/U7eXsA/ArNAQbHhEaX8q9Ao15/13tVIQnoA==",
+  "success": true,
+  "projectFilePath": "/home/sasha/Projects/BlazorHybridSass/BlazorHybridSass.csproj",
+  "expectedPackageFiles": [
+    "/home/sasha/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.6/microsoft.aspnetcore.app.ref.8.0.6.nupkg.sha512"
+  ],
+  "logs": []
+}
