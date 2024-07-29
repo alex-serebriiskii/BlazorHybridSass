@@ -1,4 +1,4 @@
-@namespace BlazorSassHybrid.DummyBlazorFiles;
+<!--namespace BlazorSassHybrid.DummyBlazorFiles -->
 @using System.Linq;
 
 <Test>
